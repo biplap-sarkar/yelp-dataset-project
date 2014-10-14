@@ -6,6 +6,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 
+/**
+ * Class to find word and wordpair trends
+ * @author satya
+ *
+ */
 public class Trends {
 
 	public ArrayList<Word> findMaxOccuringWord(int k, String []file) throws NumberFormatException, IOException{

@@ -8,7 +8,7 @@ import java.util.PriorityQueue;
 
 /**
  * Class to find word and wordpair trends
- * @author satya
+ * @author biplap
  *
  */
 public class Trends {
@@ -44,6 +44,8 @@ public class Trends {
 			String []str = null;
 			while((line=br.readLine())!=null){
 				str = line.split("\\s+");
+				if (str.length != 3)
+					continue;
 				Word word = new Word(str[0]+" "+str[1],Integer.parseInt(str[2]));
 				minHeap.add(word);
 			}
@@ -102,7 +104,7 @@ public class Trends {
 				file[i-1] = args[i];
 			ArrayList<Word> words = trend.findMaxOccuringWord(k, file);
 			for(int i=0;i<words.size();i++)
-				System.out.println(words.get(i).getWord()+ " Count:- "+words.get(i).getCount());
+				System.out.println(words.get(i).getWord()+ " "+words.get(i).getCount());
 		}
 		catch(Exception e){
 			System.out.println("Error:- "+e.getLocalizedMessage());

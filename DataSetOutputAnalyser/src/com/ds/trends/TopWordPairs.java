@@ -22,7 +22,7 @@ public class TopWordPairs {
 				file[i-1] = args[i];
 			ArrayList<Word> words = trend.findMaxOccuringWordPair(k, file);
 			for(int i=0;i<words.size();i++)
-				System.out.println(words.get(i).getWord()+ " Count:- "+words.get(i).getCount());
+				System.out.println(words.get(i).getWord()+ " "+words.get(i).getCount());
 		}
 		catch(Exception e){
 			System.out.println("Error:- "+e.getLocalizedMessage());

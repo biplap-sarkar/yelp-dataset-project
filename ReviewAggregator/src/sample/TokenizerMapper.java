@@ -19,7 +19,8 @@ public class TokenizerMapper extends Mapper<Object, Text, Text, IntWritable>{
 	
 	public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
 		//StringTokenizer itr = new StringTokenizer(value.toString());
-		String str = value.toString().toLowerCase().replaceAll("[^a-zA-Z ]+", "");
+		String str = value.toString().toLowerCase().replaceAll("\\.", " ");
+		str = str.replaceAll("[^a-zA-Z ]+", "");
 		String []retval = str.split("\\s+");
 		//HashSet<String> set = new HashSet<String>();
 		

@@ -3,8 +3,23 @@ import java.util.ArrayList;
 
 	
 public class Business implements DSObject {
+	
+	public static final String TYPE = "type";
+	public static final String BUSINESS_ID = "business_id";
+	public static final String NAME = "name";
+	public static final String NEIGHBORHOODS = "neighborhoods";
+	public static final String FULL_ADDRESS = "full_address";
+	public static final String CITY = "city";
+	public static final String STATE = "stage";
+	public static final String LATITUDE = "latitude";
+	public static final String LONGITUDE = "longitude";
+	public static final String STARS = "stars";
+	public static final String REVIEW_COUNT = "review_count";
+	public static final String CATEGORIES = "categories";
+	public static final String OPEN = "open";
+	
 	private String type;
-	private int id;
+	private String id;
 	private String name;
 	private ArrayList<String> neighborhoodList;
 	private String fullAddress;
@@ -14,21 +29,20 @@ public class Business implements DSObject {
 	private String longitude;
 	private float stars;
 	private int reviewCount;
-	private String photoUrl;
 	private ArrayList<String> categories;
 	private boolean open;
-	private ArrayList<String> schools;
-	private String url;
+	private boolean categoryFood;
+	
 	public String getType() {
 		return type;
 	}
 	public void setType(String type) {
 		this.type = type;
 	}
-	public int getId() {
+	public String getId() {
 		return id;
 	}
-	public void setId(int id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 	public String getName() {
@@ -85,12 +99,7 @@ public class Business implements DSObject {
 	public void setReviewCount(int reviewCount) {
 		this.reviewCount = reviewCount;
 	}
-	public String getPhotoUrl() {
-		return photoUrl;
-	}
-	public void setPhotoUrl(String photoUrl) {
-		this.photoUrl = photoUrl;
-	}
+	
 	public ArrayList<String> getCategories() {
 		return categories;
 	}
@@ -103,17 +112,11 @@ public class Business implements DSObject {
 	public void setOpen(boolean open) {
 		this.open = open;
 	}
-	public ArrayList<String> getSchools() {
-		return schools;
+	public boolean isCategoryFood() {
+		return categoryFood;
 	}
-	public void setSchools(ArrayList<String> schools) {
-		this.schools = schools;
-	}
-	public String getUrl() {
-		return url;
-	}
-	public void setUrl(String url) {
-		this.url = url;
+	public void setCategoryFood(boolean categoryFood) {
+		this.categoryFood = categoryFood;
 	}
 	
 }

@@ -5,7 +5,11 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
 
+import com.ds.db.DBHelper;
+import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 
@@ -73,9 +77,76 @@ public class DSObjectReader {
 		jsonReader.close();
 	}
 	
-	private Business readBusinessObject() {
-		return null;
+	private Business readBusinessObject() throws IOException {
+		Business business = new Business();
+		business.setCategoryFood(false);
+		jsonReader.setLenient(true);
+		jsonReader.beginObject();
+		String key = "";
+		String nextCategory;
+		while (jsonReader.hasNext()) {
+			key = jsonReader.nextName();
+			if (key.equalsIgnoreCase(Business.TYPE)) {
+				business.setType(jsonReader.nextString());
+			}
+			else if (key.equalsIgnoreCase(Business.BUSINESS_ID)) {
+				business.setId(jsonReader.nextString());
+			}
+			else if (key.equalsIgnoreCase(Business.NAME)) {
+				business.setName(jsonReader.nextString());
+			}
+			else if (key.equalsIgnoreCase(Business.NEIGHBORHOODS)) {
+				business.setNeighborhoodList(new ArrayList<String>());
+				jsonReader.beginArray();
+				while (jsonReader.hasNext()) {
+					business.getNeighborhoodList().add(jsonReader.nextString());
+				}
+				jsonReader.endArray();
+			}
+			else if (key.equalsIgnoreCase(Business.FULL_ADDRESS)) {
+				business.setFullAddress(jsonReader.nextString());
+			}
+			else if (key.equalsIgnoreCase(Business.CITY)) {
+				business.setCity(jsonReader.nextString());
+			}
+			else if (key.equalsIgnoreCase(Business.STATE)) {
+				business.setState(jsonReader.nextString());
+			}
+			else if (key.equalsIgnoreCase(Business.LATITUDE)) {
+				business.setLatitude(jsonReader.nextString());
+			}
+			else if (key.equalsIgnoreCase(Business.LONGITUDE)) {
+				business.setLongitude(jsonReader.nextString());
+			}
+			else if (key.equalsIgnoreCase(Business.STARS)) {
+				business.setStars((float) jsonReader.nextDouble());
+			}
+			else if (key.equalsIgnoreCase(Business.REVIEW_COUNT)) {
+				business.setReviewCount(jsonReader.nextInt());
+			}
+			else if (key.equalsIgnoreCase(Business.CATEGORIES)) {
+				business.setCategories(new ArrayList<String>());
+				jsonReader.beginArray();
+				while (jsonReader.hasNext()) {
+					nextCategory = jsonReader.nextString();
+					if (nextCategory.toLowerCase().contains("food") || nextCategory.toLowerCase().contains("restaurant")) {
+						business.setCategoryFood(true);
+					}
+					business.getCategories().add(nextCategory);
+				}
+				jsonReader.endArray();
+			}
+			else if (key.equalsIgnoreCase(Business.OPEN)) {
+				business.setOpen(jsonReader.nextBoolean());
+			}
+			else {
+				jsonReader.skipValue();
+			}
+		}
+		jsonReader.endObject();
+		return business;
 	}
+	
 	
 	/**
 	 * Parses a Review object from the JSON stream
@@ -155,6 +226,34 @@ public class DSObjectReader {
 	
 	public static void main(String []args) {
 		try {
+			DBHelper dbHelper = new DBHelper();
+			DSObjectReader dsObjectReader = new DSObjectReader("/home/biplap/Downloads/yelp/yelp_academic_dataset_business.json");
+			Business business = null;
+			Gson gson = new Gson();
+			//String jsonStr = null;
+			while (dsObjectReader.hasNext()) {
+				business = dsObjectReader.readObject(Business.class);
+				dbHelper.save(business);
+				//System.out.println(gson.toJson(business));
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+	/*
+	public static void main(String []args) {
+		try {
 			DSObjectReader dsObjectReader = new DSObjectReader("/home/biplap/Downloads/yelp/yelp_academic_dataset_review.json");
 			BufferedWriter bw = new BufferedWriter(new FileWriter("/home/biplap/Downloads/yelp/reviews.txt"));
 			Review review = null;
@@ -164,24 +263,16 @@ public class DSObjectReader {
 				bw.write(review.getText());
 			}
 			bw.close();
-			/*
-			for (int i=0;i<50;i++) {
-				review = dsObjectReader.readObject(Review.class);
-				System.out.println(review.getText());
-			}
-			*/
+			
 			dsObjectReader.close();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//DSObjectReader dsObjreader = new DSObjectReader();
-		//JsonReader reader = new JsonReader(new FileReader("some file"));
-		//dsObjreader.readObject(Review.class, reader);
-		//System.out.println(someInt.equals(Integer.class));
  catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+	*/
 }

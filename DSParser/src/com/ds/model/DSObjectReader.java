@@ -226,14 +226,49 @@ public class DSObjectReader {
 	
 	public static void main(String []args) {
 		try {
+			DSObjectReader dsObjectReader = new DSObjectReader("/home/biplap/Downloads/yelp/yelp_academic_dataset_review.json");
+			BufferedWriter bw = new BufferedWriter(new FileWriter("/home/biplap/Downloads/yelp/reviews.txt"));
+			Review review = null;
+			Business business = null;
+			DBHelper dbHelper = new DBHelper();
+			
+			for (int i=0;i<10;i++) {
+				review = dsObjectReader.readObject(Review.class);
+				business = dbHelper.get(Business.class, review.getBusinessId());
+				System.out.println(review.getText() + " " + business.isCategoryFood());
+			}
+			bw.close();
+			
+			dsObjectReader.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	/*
+	public static void main(String []args) {
+		try {
 			DBHelper dbHelper = new DBHelper();
 			DSObjectReader dsObjectReader = new DSObjectReader("/home/biplap/Downloads/yelp/yelp_academic_dataset_business.json");
 			Business business = null;
+			Business fetched = null;
 			Gson gson = new Gson();
 			//String jsonStr = null;
 			while (dsObjectReader.hasNext()) {
 				business = dsObjectReader.readObject(Business.class);
+				//System.out.println(business.getId());
 				dbHelper.save(business);
+				//fetched = dbHelper.get(Business.class, business.getId());
+				//System.out.println(fetched.getId());
 				//System.out.println(gson.toJson(business));
 			}
 		} catch (FileNotFoundException e) {
@@ -250,7 +285,7 @@ public class DSObjectReader {
 			e.printStackTrace();
 		}
 
-	}
+	}*/
 	/*
 	public static void main(String []args) {
 		try {

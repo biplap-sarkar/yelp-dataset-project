@@ -18,6 +18,7 @@ import com.ds.model.Business;
 
 public class DBHelper {
 	private static final String CONFIG_FILE = "db.config";
+	//private Connection conn = null;
 	
 	/*
 	private static final int BUSINESS_ID = 1;
@@ -38,6 +39,21 @@ public class DBHelper {
 	*/
 	Properties configProperties = new Properties();
 	private Connection connect() throws IOException, ClassNotFoundException, SQLException {
+		/*
+		if (conn == null) {
+		configProperties.load(getClass().getClassLoader().getResourceAsStream(CONFIG_FILE));
+		String dbName = configProperties.getProperty("dbname");
+		String ip = configProperties.getProperty("ip");
+		String port = configProperties.getProperty("port");
+		String user = configProperties.getProperty("user");
+		String password = configProperties.getProperty("password");
+		Class.forName("com.mysql.jdbc.Driver");
+		String url = "jdbc:mysql://" + ip + ":" + port+"/"+dbName;
+		conn = DriverManager.getConnection(url, user, password);
+		}
+		return conn;
+		*/
+		
 		configProperties.load(getClass().getClassLoader().getResourceAsStream(CONFIG_FILE));
 		String dbName = configProperties.getProperty("dbname");
 		String ip = configProperties.getProperty("ip");
@@ -47,6 +63,7 @@ public class DBHelper {
 		Class.forName("com.mysql.jdbc.Driver");
 		String url = "jdbc:mysql://" + ip + ":" + port+"/"+dbName;
 		return DriverManager.getConnection(url, user, password);
+		
 	}
 	
 	public int save(Object obj) throws ClassNotFoundException, IOException, SQLException {
@@ -109,7 +126,12 @@ public class DBHelper {
 		Connection con = connect();
 		PreparedStatement pstmt = con.prepareStatement("select * from business where id=?");
 		pstmt.setString(1, id);
+		
 		ResultSet rs = pstmt.executeQuery();
+		
+		if (rs.first() == false) {
+			throw new SQLException("No record found for the key "+id);
+		}
 		business.setId(rs.getString(1));
 		business.setName(rs.getString(2));
 		business.setNeighborhoodList(new ArrayList<String>(Arrays.asList(rs.getString(3).replaceAll("\\]|\\[|\\ ", "").split(","))));

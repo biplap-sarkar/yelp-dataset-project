@@ -18,7 +18,7 @@ import com.ds.model.Business;
 
 public class DBHelper {
 	private static final String CONFIG_FILE = "db.config";
-	//private Connection conn = null;
+	private Connection conn = null;
 	
 	/*
 	private static final int BUSINESS_ID = 1;
@@ -38,9 +38,7 @@ public class DBHelper {
 	private static final int BUSINESS_URL = 15;
 	*/
 	Properties configProperties = new Properties();
-	private Connection connect() throws IOException, ClassNotFoundException, SQLException {
-		/*
-		if (conn == null) {
+	public void connect() throws IOException, ClassNotFoundException, SQLException {
 		configProperties.load(getClass().getClassLoader().getResourceAsStream(CONFIG_FILE));
 		String dbName = configProperties.getProperty("dbname");
 		String ip = configProperties.getProperty("ip");
@@ -50,20 +48,10 @@ public class DBHelper {
 		Class.forName("com.mysql.jdbc.Driver");
 		String url = "jdbc:mysql://" + ip + ":" + port+"/"+dbName;
 		conn = DriverManager.getConnection(url, user, password);
-		}
-		return conn;
-		*/
-		
-		configProperties.load(getClass().getClassLoader().getResourceAsStream(CONFIG_FILE));
-		String dbName = configProperties.getProperty("dbname");
-		String ip = configProperties.getProperty("ip");
-		String port = configProperties.getProperty("port");
-		String user = configProperties.getProperty("user");
-		String password = configProperties.getProperty("password");
-		Class.forName("com.mysql.jdbc.Driver");
-		String url = "jdbc:mysql://" + ip + ":" + port+"/"+dbName;
-		return DriverManager.getConnection(url, user, password);
-		
+	}
+	
+	public void close() throws SQLException {
+		conn.close();
 	}
 	
 	public int save(Object obj) throws ClassNotFoundException, IOException, SQLException {
@@ -84,10 +72,40 @@ public class DBHelper {
 		throw new NotImplementedException();
 	}
 	
+	
+	public <T> boolean getBoolean(Class<T> type, String id, String colName) throws SQLException {
+		if (type.equals(Business.class)) {
+			return getBooleanBusiness(id, colName);
+		}
+		throw new NotImplementedException();
+	}
+	
+	public <T> String getString(Class<T> type, String id, String colName) throws SQLException {
+		if (type.equals(Business.class)) {
+			return getStringBusiness(id, colName);
+		}
+		throw new NotImplementedException();
+	}
+	
+	public <T> int getInt(Class<T> type, String id, String colName) throws SQLException {
+		if (type.equals(Business.class)) {
+			return getIntBusiness(id, colName);
+		}
+		throw new NotImplementedException();
+	}
+	
+	public <T> double getDouble(Class<T> type, String id, String colName) throws SQLException {
+		if (type.equals(Business.class)) {
+			return getDoubleBusiness(id, colName);
+		}
+		throw new NotImplementedException();
+	}
+	
+	
+	
 	private int saveBusiness(Business business) throws ClassNotFoundException, IOException, SQLException {
-		Connection con = connect();
 		int res = 0;
-		PreparedStatement pstmt = con.prepareStatement("insert into business (id, name, neighborhoodlist, fulladdress, city, state, latitude, longitude, stars, reviewcount, categories, open, iscategoryfood)"
+		PreparedStatement pstmt = conn.prepareStatement("insert into business (id, name, neighborhoodlist, fulladdress, city, state, latitude, longitude, stars, reviewcount, categories, open, iscategoryfood)"
 				+ " values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) on duplicate key update"
 				+ " name=?, neighborhoodlist=?, fulladdress=?, city=?, state=?, latitude=?, longitude=?, stars=?, reviewcount=?, categories=?, open=?, iscategoryfood=?;");
 		pstmt.setString(1, business.getId());
@@ -117,14 +135,64 @@ public class DBHelper {
 		pstmt.setBoolean(25, business.isCategoryFood());
 		
 		res = pstmt.executeUpdate();
-		con.close();
 		return res;
+	}
+	
+	private boolean getBooleanBusiness(String id, String colName) throws SQLException {
+		PreparedStatement pstmt = conn.prepareStatement("select * from business where id=? and "+colName+"=?;");
+		pstmt.setString(1, id);
+		pstmt.setString(2, colName);
+		
+		ResultSet rs = pstmt.executeQuery();
+		
+		if (rs.first() == false) {
+			throw new SQLException("No record found for the key "+id);
+		}
+		return rs.getBoolean(1);
+	}
+	
+	private String getStringBusiness(String id, String colName) throws SQLException {
+		PreparedStatement pstmt = conn.prepareStatement("select * from business where id=? and "+colName+"=?;");
+		pstmt.setString(1, id);
+		pstmt.setString(2, colName);
+		
+		ResultSet rs = pstmt.executeQuery();
+		
+		if (rs.first() == false) {
+			throw new SQLException("No record found for the key "+id);
+		}
+		return rs.getString(1);
+	}
+	
+	private int getIntBusiness(String id, String colName) throws SQLException {
+		PreparedStatement pstmt = conn.prepareStatement("select * from business where id=? and "+colName+"=?;");
+		pstmt.setString(1, id);
+		pstmt.setString(2, colName);
+		
+		ResultSet rs = pstmt.executeQuery();
+		
+		if (rs.first() == false) {
+			throw new SQLException("No record found for the key "+id);
+		}
+		return rs.getInt(1);
+	}
+	
+	private double getDoubleBusiness(String id, String colName) throws SQLException {
+		PreparedStatement pstmt = conn.prepareStatement("select * from business where id=? and "+colName+"=?;");
+		pstmt.setString(1, id);
+		pstmt.setString(2, colName);
+		
+		ResultSet rs = pstmt.executeQuery();
+		
+		if (rs.first() == false) {
+			throw new SQLException("No record found for the key "+id);
+		}
+		return rs.getDouble(1);
 	}
 	
 	private Business getBusiness(String id) throws ClassNotFoundException, IOException, SQLException {
 		Business business = new Business();
-		Connection con = connect();
-		PreparedStatement pstmt = con.prepareStatement("select * from business where id=?");
+		PreparedStatement pstmt = conn.prepareStatement("select * from business where id=?");
 		pstmt.setString(1, id);
 		
 		ResultSet rs = pstmt.executeQuery();
@@ -146,7 +214,6 @@ public class DBHelper {
 		business.setOpen(rs.getBoolean(12));
 		business.setCategoryFood(rs.getBoolean(13));
 		
-		con.close();
 		return business;
 	}
 	

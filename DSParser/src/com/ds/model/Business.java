@@ -17,6 +17,7 @@ public class Business implements DSObject {
 	public static final String REVIEW_COUNT = "review_count";
 	public static final String CATEGORIES = "categories";
 	public static final String OPEN = "open";
+	public static final String ISCATEGORYFOOD = "iscategoryfood";
 	
 	private String type;
 	private String id;

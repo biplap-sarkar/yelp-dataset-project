@@ -4,9 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.StringTokenizer;
 
-import org.apache.hadoop.classification.InterfaceAudience.Public;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -23,8 +21,15 @@ public class TokenizerMapper extends Mapper<Object, Text, Text, IntWritable>{
 		str = str.replaceAll("[^a-zA-Z ]+", "");
 		String []retval = str.split("\\s+");
 		//HashSet<String> set = new HashSet<String>();
-		
-		for (int i=0;i<retval.length-1;i++){
+		for (int i=0;i<retval.length;i++){
+			System.out.println(" new word "+retval[i]);
+			if(ignorewords.contains(retval[i]) == false)
+			{
+				word.set(retval[i]);
+				context.write(word, one);
+			}
+		}
+		/*for (int i=0;i<retval.length-1;i++){
 			if(ignorewords.contains(retval[i]) == false)
 			{
 				for (int j=i+1;j<retval.length;j++)
@@ -51,7 +56,7 @@ public class TokenizerMapper extends Mapper<Object, Text, Text, IntWritable>{
 					}
 				}
 			}
-	      }
+	      }*/
 		
 		/*while (itr.hasMoreTokens()) {
 			word.set(itr.nextToken());

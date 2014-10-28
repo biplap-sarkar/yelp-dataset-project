@@ -135,10 +135,12 @@ public class DBHelper {
 		pstmt.setBoolean(25, business.isCategoryFood());
 		
 		res = pstmt.executeUpdate();
+		pstmt.close();
 		return res;
 	}
 	
 	private boolean getBooleanBusiness(String id, String colName) throws SQLException {
+		boolean result = false;
 		PreparedStatement pstmt = conn.prepareStatement("select * from business where id=? and "+colName+"=?;");
 		pstmt.setString(1, id);
 		pstmt.setString(2, colName);
@@ -148,10 +150,13 @@ public class DBHelper {
 		if (rs.first() == false) {
 			throw new SQLException("No record found for the key "+id);
 		}
-		return rs.getBoolean(1);
+		result = rs.getBoolean(1);
+		pstmt.close();
+		return result;
 	}
 	
 	private String getStringBusiness(String id, String colName) throws SQLException {
+		String result = "";
 		PreparedStatement pstmt = conn.prepareStatement("select * from business where id=? and "+colName+"=?;");
 		pstmt.setString(1, id);
 		pstmt.setString(2, colName);
@@ -161,10 +166,14 @@ public class DBHelper {
 		if (rs.first() == false) {
 			throw new SQLException("No record found for the key "+id);
 		}
-		return rs.getString(1);
+		result = rs.getString(1);
+		pstmt.close();
+	
+		return result;
 	}
 	
 	private int getIntBusiness(String id, String colName) throws SQLException {
+		int result = 0;
 		PreparedStatement pstmt = conn.prepareStatement("select * from business where id=? and "+colName+"=?;");
 		pstmt.setString(1, id);
 		pstmt.setString(2, colName);
@@ -174,10 +183,13 @@ public class DBHelper {
 		if (rs.first() == false) {
 			throw new SQLException("No record found for the key "+id);
 		}
-		return rs.getInt(1);
+		result = rs.getInt(1);
+		pstmt.close();
+		return result;
 	}
 	
 	private double getDoubleBusiness(String id, String colName) throws SQLException {
+		double result = 0.0;
 		PreparedStatement pstmt = conn.prepareStatement("select * from business where id=? and "+colName+"=?;");
 		pstmt.setString(1, id);
 		pstmt.setString(2, colName);
@@ -187,7 +199,9 @@ public class DBHelper {
 		if (rs.first() == false) {
 			throw new SQLException("No record found for the key "+id);
 		}
-		return rs.getDouble(1);
+		result = rs.getDouble(1);
+		
+		return result;
 	}
 	
 	private Business getBusiness(String id) throws ClassNotFoundException, IOException, SQLException {
@@ -213,6 +227,8 @@ public class DBHelper {
 		business.setCategories(new ArrayList<String>(Arrays.asList(rs.getString(11).replaceAll("\\]|\\[|\\ ", "").split(","))));
 		business.setOpen(rs.getBoolean(12));
 		business.setCategoryFood(rs.getBoolean(13));
+		
+		pstmt.close();
 		
 		return business;
 	}

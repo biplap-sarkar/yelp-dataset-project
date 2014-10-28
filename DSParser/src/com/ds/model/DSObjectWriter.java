@@ -14,7 +14,7 @@ public class DSObjectWriter {
 	
 	private JsonWriter jsonWriter = null;
 	
-	private DSObjectWriter(String file) throws IOException {
+	public DSObjectWriter(String file) throws IOException {
 		jsonWriter = new JsonWriter(new FileWriter(file));
 	}
 	public void writeObject(Object obj) throws IOException {
@@ -32,6 +32,7 @@ public class DSObjectWriter {
 	
 	private void writeReviewObject(Review review) throws IOException {
 		jsonWriter.setLenient(true);
+		jsonWriter.setIndent(" ");
 		jsonWriter.beginObject();
 		jsonWriter.name(Review.TYPE).value(review.getType());
 		jsonWriter.name(Review.BUSINESS_ID).value(review.getBusinessId());
@@ -47,7 +48,7 @@ public class DSObjectWriter {
 		jsonWriter.endObject();
 		jsonWriter.endObject();
 	}
-	
+	/*
 	public static void main(String []args) {
 		try {
 			DSObjectReader objReader = new DSObjectReader("/home/biplap/Downloads/yelp/yelp_academic_dataset_review.json");
@@ -90,5 +91,5 @@ public class DSObjectWriter {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		} 
-	}
+	}*/
 }

@@ -21,6 +21,9 @@ public class DSObjectWriter {
 		if (obj instanceof Review) {
 			writeReviewObject((Review) obj);
 		}
+		else if (obj instanceof ReviewSentiment) {
+			writeReviewSentimentObject((ReviewSentiment) obj);
+		}
 		else {
 			throw new NotImplementedException();
 		}
@@ -46,6 +49,24 @@ public class DSObjectWriter {
 		jsonWriter.name(Votes.FUNNY).value(review.getVotes().getFunny());
 		jsonWriter.name(Votes.USEFUL).value(review.getVotes().getUseful());
 		jsonWriter.endObject();
+		jsonWriter.endObject();
+	}
+	
+	private void writeReviewSentimentObject(ReviewSentiment sentiment) throws IOException {
+		jsonWriter.setLenient(true);
+		jsonWriter.setIndent("");
+		jsonWriter.beginObject();
+		jsonWriter.name(ReviewSentiment.BUSINESS_ID).value(sentiment.getBusinessId());
+		jsonWriter.name(ReviewSentiment.USER_ID).value(sentiment.getUserId());
+		jsonWriter.name(ReviewSentiment.TEXT).value(sentiment.getText());
+		jsonWriter.name(ReviewSentiment.IS_POSITIVE_FOOD).value(sentiment.isPositiveFood());
+		jsonWriter.name(ReviewSentiment.IS_POSITIVE_SERVICE).value(sentiment.isPositiveService());
+		jsonWriter.name(ReviewSentiment.IS_POSITIVE_AMBIENCE).value(sentiment.isPositiveAmbience());
+		jsonWriter.name(ReviewSentiment.IS_POSITIVE_PRICE).value(sentiment.isPositivePrice());
+		jsonWriter.name(ReviewSentiment.IS_NEGATIVE_FOOD).value(sentiment.isNegativeFood());
+		jsonWriter.name(ReviewSentiment.IS_NEGATIVE_SERVICE).value(sentiment.isNegativeService());
+		jsonWriter.name(ReviewSentiment.IS_NEGATIVE_AMBIENCE).value(sentiment.isNegativeAmbience());
+		jsonWriter.name(ReviewSentiment.IS_NEGATIVE_PRICE).value(sentiment.isNegativePrice());
 		jsonWriter.endObject();
 	}
 	/*

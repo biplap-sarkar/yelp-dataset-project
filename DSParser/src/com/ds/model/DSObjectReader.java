@@ -234,6 +234,7 @@ public class DSObjectReader {
 	
 	private ReviewSentiment readReviewSentimentObject() throws IOException {
 		ReviewSentiment sentiment = new ReviewSentiment();
+		jsonReader.setLenient(true);
 		jsonReader.beginObject();
 		String key = "";
 		while (jsonReader.hasNext()) {

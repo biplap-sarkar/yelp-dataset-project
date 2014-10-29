@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Reader;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -31,6 +32,11 @@ public class DSObjectReader {
 		jsonReader = new JsonReader(new FileReader(fileName));
 	}
 	
+	
+	public DSObjectReader(Reader in) {
+		jsonReader = new JsonReader(in);
+	}
+	
 	/**
 	 * 
 	 * @param type of the object which needs to be parsed.
@@ -54,6 +60,9 @@ public class DSObjectReader {
 		}
 		else if (type.equals(User.class)) {
 			return type.cast(readUserObject());
+		}
+		else if (type.equals(ReviewSentiment.class)) {
+			return type.cast(readReviewSentimentObject());
 		}
 		throw new ClassCastException("Could not find object of any supported Class");
 	}
@@ -221,6 +230,53 @@ public class DSObjectReader {
 		}
 		jsonReader.endObject();
 		return votes;
+	}
+	
+	private ReviewSentiment readReviewSentimentObject() throws IOException {
+		ReviewSentiment sentiment = new ReviewSentiment();
+		jsonReader.beginObject();
+		String key = "";
+		while (jsonReader.hasNext()) {
+			key = jsonReader.nextName();
+			if (key.equalsIgnoreCase(ReviewSentiment.BUSINESS_ID)) {
+				sentiment.setBusinessId(jsonReader.nextString());
+			}
+			else if (key.equalsIgnoreCase(ReviewSentiment.USER_ID)) {
+				sentiment.setUserId(jsonReader.nextString());
+			}
+			else if (key.equalsIgnoreCase(ReviewSentiment.TEXT)) {
+				sentiment.setText(jsonReader.nextString());
+			}
+			else if (key.equalsIgnoreCase(ReviewSentiment.IS_POSITIVE_FOOD)) {
+				sentiment.setPositiveFood(jsonReader.nextBoolean());
+			}
+			else if (key.equalsIgnoreCase(ReviewSentiment.IS_POSITIVE_SERVICE)) {
+				sentiment.setPositiveService(jsonReader.nextBoolean());
+			}
+			else if (key.equalsIgnoreCase(ReviewSentiment.IS_POSITIVE_AMBIENCE)) {
+				sentiment.setPositiveAmbience(jsonReader.nextBoolean());
+			}
+			else if (key.equalsIgnoreCase(ReviewSentiment.IS_POSITIVE_PRICE)) {
+				sentiment.setPositivePrice(jsonReader.nextBoolean());
+			}
+			else if (key.equalsIgnoreCase(ReviewSentiment.IS_NEGATIVE_FOOD)) {
+				sentiment.setNegativeFood(jsonReader.nextBoolean());
+			}
+			else if (key.equalsIgnoreCase(ReviewSentiment.IS_NEGATIVE_SERVICE)) {
+				sentiment.setNegativeService(jsonReader.nextBoolean());
+			}
+			else if (key.equalsIgnoreCase(ReviewSentiment.IS_NEGATIVE_AMBIENCE)) {
+				sentiment.setNegativeAmbience(jsonReader.nextBoolean());
+			}
+			else if (key.equalsIgnoreCase(ReviewSentiment.IS_NEGATIVE_PRICE)) {
+				sentiment.setNegativePrice(jsonReader.nextBoolean());
+			}
+			else {
+				jsonReader.skipValue();
+			}
+		}
+		jsonReader.endObject();
+		return sentiment;
 	}
 	
 	public static void main(String []args) {

@@ -11,9 +11,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
 
+import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import com.ds.model.Business;
+import com.ds.model.ReviewSentiment;
 
 
 public class DBHelper {
@@ -59,6 +61,9 @@ public class DBHelper {
 		if (obj instanceof Business) {
 			res = saveBusiness((Business) obj);
 		}
+		else if (obj instanceof ReviewSentiment) {
+			res = saveReviewSentiment((ReviewSentiment) obj);
+		}
 		else {
 			throw new NotImplementedException();
 		}
@@ -68,6 +73,16 @@ public class DBHelper {
 	public <T> T get(Class<T> type, String id) throws ClassNotFoundException, IOException, SQLException {
 		if (type.equals(Business.class)) {
 			return type.cast(getBusiness(id));
+		}
+		throw new NotImplementedException();
+	}
+	
+	public <T> T get(Class<T> type, String[] fields, String[]vals) throws SQLException {
+		if (type.equals(Business.class)) {
+			return type.cast(getBusiness(fields, vals));
+		}
+		else if (type.equals(ReviewSentiment.class)) {
+			return type.cast(getReviewSentiment(fields, vals));
 		}
 		throw new NotImplementedException();
 	}
@@ -101,7 +116,36 @@ public class DBHelper {
 		throw new NotImplementedException();
 	}
 	
-	
+	private int saveReviewSentiment(ReviewSentiment sentiment) throws SQLException {
+		int res = 0;
+		PreparedStatement pstmt = conn.prepareStatement("insert into review_sentiment (business_id, user_id, text, is_positive_food, is_positive_service, is_positive_ambience, is_positive_price, is_negative_food, is_negative_service, is_negative_ambience, is_negative_price)"
+				+ " values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) on duplicate key update"
+				+ " business_id=?, user_id=?, is_positive_food=?, is_positive_service=?, is_positive_ambience=?, is_positive_price=?, is_negative_food=?, is_negative_service=?, is_negative_ambience=?, is_negative_price=?;");
+		pstmt.setString(1, sentiment.getBusinessId());
+		pstmt.setString(2, sentiment.getUserId());
+		pstmt.setString(3, sentiment.getText());
+		pstmt.setBoolean(4, sentiment.isPositiveFood());
+		pstmt.setBoolean(5, sentiment.isPositiveService());
+		pstmt.setBoolean(6, sentiment.isPositiveAmbience());
+		pstmt.setBoolean(7, sentiment.isPositivePrice());
+		pstmt.setBoolean(8, sentiment.isNegativeFood());
+		pstmt.setBoolean(9, sentiment.isNegativeService());
+		pstmt.setBoolean(10, sentiment.isNegativeAmbience());
+		pstmt.setBoolean(11, sentiment.isNegativePrice());
+		pstmt.setString(12, sentiment.getText());
+		pstmt.setBoolean(13, sentiment.isPositiveFood());
+		pstmt.setBoolean(14, sentiment.isPositiveService());
+		pstmt.setBoolean(15, sentiment.isPositiveAmbience());
+		pstmt.setBoolean(16, sentiment.isPositivePrice());
+		pstmt.setBoolean(17, sentiment.isNegativeFood());
+		pstmt.setBoolean(18, sentiment.isNegativeService());
+		pstmt.setBoolean(19, sentiment.isNegativeAmbience());
+		pstmt.setBoolean(20, sentiment.isNegativePrice());
+		
+		res = pstmt.executeUpdate();
+		pstmt.close();
+		return res;
+	}
 	
 	private int saveBusiness(Business business) throws ClassNotFoundException, IOException, SQLException {
 		int res = 0;
@@ -204,6 +248,32 @@ public class DBHelper {
 		return result;
 	}
 	
+	private Business getBusiness(String[] fields, String[] vals) throws SQLException {
+		Business business = new Business();
+		PreparedStatement pstmt = buildStatement("select * from business", fields, vals);
+		ResultSet rs = pstmt.executeQuery();
+		
+		if (rs.first() == false) {
+			throw new SQLException("No record found for given fields");
+		}
+		business.setId(rs.getString(1));
+		business.setName(rs.getString(2));
+		business.setNeighborhoodList(new ArrayList<String>(Arrays.asList(rs.getString(3).replaceAll("\\]|\\[|\\ ", "").split(","))));
+		business.setFullAddress(rs.getString(4));
+		business.setCity(rs.getString(5));
+		business.setState(rs.getString(6));
+		business.setLatitude(rs.getString(7));
+		business.setLongitude(rs.getString(8));
+		business.setStars(rs.getFloat(9));
+		business.setReviewCount(rs.getInt(10));
+		business.setCategories(new ArrayList<String>(Arrays.asList(rs.getString(11).replaceAll("\\]|\\[|\\ ", "").split(","))));
+		business.setOpen(rs.getBoolean(12));
+		business.setCategoryFood(rs.getBoolean(13));
+		
+		pstmt.close();
+		return business;
+	}
+	
 	private Business getBusiness(String id) throws ClassNotFoundException, IOException, SQLException {
 		Business business = new Business();
 		PreparedStatement pstmt = conn.prepareStatement("select * from business where id=?");
@@ -231,6 +301,50 @@ public class DBHelper {
 		pstmt.close();
 		
 		return business;
+	}
+	
+	private ReviewSentiment getReviewSentiment(String[] fields, String[] vals) throws SQLException {
+		ReviewSentiment sentiment = new ReviewSentiment();
+		PreparedStatement pstmt = buildStatement("select * from review_sentiment", fields, vals);
+		ResultSet rs = pstmt.executeQuery();
+		if (rs.first()==false) {
+			throw new SQLException("No records found for given fields");
+		}
+		sentiment.setBusinessId(rs.getString(1));
+		sentiment.setUserId(rs.getString(2));
+		sentiment.setText(rs.getString(3));
+		sentiment.setPositiveFood(rs.getBoolean(4));
+		sentiment.setPositiveService(rs.getBoolean(5));
+		sentiment.setPositiveAmbience(rs.getBoolean(6));
+		sentiment.setPositivePrice(rs.getBoolean(7));
+		sentiment.setNegativeFood(rs.getBoolean(8));
+		sentiment.setNegativeService(rs.getBoolean(9));
+		sentiment.setNegativeAmbience(rs.getBoolean(10));
+		sentiment.setNegativePrice(rs.getBoolean(11));
+		
+		pstmt.close();
+		return sentiment;
+	}
+	
+	private PreparedStatement buildStatement(String query, String[] fields, String[] vals) throws SQLException {
+		if (fields == null || fields.length == 0)
+			throw new IllegalArgumentException("Expected atleast one field, found none");
+		if (fields.length != vals.length)
+			throw new IllegalArgumentException("Mismatch between number of fields and number of values");
+		PreparedStatement pstmt = null;
+		StringBuilder queryBuilder = new StringBuilder(query);
+		queryBuilder.append(" where");
+		for (int i=0;i<fields.length;i++) {
+			queryBuilder.append(fields[i]+" = "+"?");
+			if (i < fields.length-1) {
+				queryBuilder.append(" and ");
+			}
+		}
+		pstmt = conn.prepareStatement(queryBuilder.toString());
+		for (int i=0;i<vals.length;i++) {
+			pstmt.setString(i, vals[i]);
+		}
+		return pstmt;
 	}
 	
 	/*

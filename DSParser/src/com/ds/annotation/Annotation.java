@@ -35,6 +35,33 @@ public class Annotation {
 	ArrayList<String[]> match = new ArrayList<String[]>();
 	HashMap<Integer,Boolean> category = new HashMap<Integer,Boolean>();
 	
+	public static void main (String []args)
+	{
+		String []text = new String[2];
+		text[0] = "food was bad";
+		text[1] = "food was good";
+		int i = 0;
+		ArrayList<String> list = new ArrayList<>();
+		
+		while(i < text.length)
+		{
+			StringBuffer sb = new StringBuffer("\"");
+			sb.append(text[i++]);
+			sb.append("\"");
+			list.add(sb.toString());
+		}
+		System.out.println(list.toString());
+		try {
+			new Annotation().annotateReviews("/home/satya/GitRepo/PdP_Project/test_review.txt");
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public void annotateReviews(String inputFile) throws IOException, ClassNotFoundException, SQLException {
 		match.add(food);
 		match.add(service);
@@ -73,7 +100,7 @@ public class Annotation {
 				i++;
 			}
 			
-			updateDB(dbHelper,review,classifierObj);
+			//updateDB(dbHelper,review,classifierObj);
 		}
 	}
 	
@@ -147,27 +174,7 @@ public class Annotation {
 		  }
 		}
 		return false;
-	}
-	
-	public static void main (String []args)
-	{
-		String []text = new String[2];
-		text[0] = "food was bad";
-		text[1] = "food was good";
-		int i = 0;
-		ArrayList<String> list = new ArrayList<>();
-		
-		while(i < text.length)
-		{
-			StringBuffer sb = new StringBuffer("\"");
-			sb.append(text[i++]);
-			sb.append("\"");
-			list.add(sb.toString());
-		}
-		System.out.println(list.toString());
-	}
-	
-	
+	}	
 	
 	private static ArrayList<Dataset> post(String targetUrl, String urlParameters)
 	{

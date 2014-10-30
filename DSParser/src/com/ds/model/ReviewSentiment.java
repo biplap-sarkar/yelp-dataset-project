@@ -18,14 +18,14 @@ public class ReviewSentiment {
 	private String businessId;
 	private String userId;
 	private String text;
-	private boolean isPositiveFood;
-	private boolean isPositiveService;
-	private boolean isPositiveAmbience;
-	private boolean isPositivePrice;
-	private boolean isNegativeFood;
-	private boolean isNegativeService;
-	private boolean isNegativeAmbience;
-	private boolean isNegativePrice;
+	private boolean isPositiveFood = false;
+	private boolean isPositiveService = false;
+	private boolean isPositiveAmbience = false;
+	private boolean isPositivePrice = false;
+	private boolean isNegativeFood = false;
+	private boolean isNegativeService = false;
+	private boolean isNegativeAmbience = false;
+	private boolean isNegativePrice = false;
 	private boolean reviewedManually = false;
 	
 	public String getBusinessId() {

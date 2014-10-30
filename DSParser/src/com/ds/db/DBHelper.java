@@ -120,7 +120,7 @@ public class DBHelper {
 		int res = 0;
 		PreparedStatement pstmt = conn.prepareStatement("insert into review_sentiment (business_id, user_id, text, is_positive_food, is_positive_service, is_positive_ambience, is_positive_price, is_negative_food, is_negative_service, is_negative_ambience, is_negative_price)"
 				+ " values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) on duplicate key update"
-				+ " business_id=?, user_id=?, is_positive_food=?, is_positive_service=?, is_positive_ambience=?, is_positive_price=?, is_negative_food=?, is_negative_service=?, is_negative_ambience=?, is_negative_price=?, is_reviewed_manually;");
+				+ " text=?, is_positive_food=?, is_positive_service=?, is_positive_ambience=?, is_positive_price=?, is_negative_food=?, is_negative_service=?, is_negative_ambience=?, is_negative_price=?, is_reviewed_manually=?;");
 		pstmt.setString(1, sentiment.getBusinessId());
 		pstmt.setString(2, sentiment.getUserId());
 		pstmt.setString(3, sentiment.getText());

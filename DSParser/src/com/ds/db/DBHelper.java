@@ -119,8 +119,8 @@ public class DBHelper {
 	private int saveReviewSentiment(ReviewSentiment sentiment) throws SQLException {
 		int res = 0;
 		PreparedStatement pstmt = conn.prepareStatement("insert into review_sentiment (business_id, user_id, text, is_positive_food, is_positive_service, is_positive_ambience, is_positive_price, is_negative_food, is_negative_service, is_negative_ambience, is_negative_price)"
-				+ " values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) on duplicate key update"
-				+ " business_id=?, user_id=?, is_positive_food=?, is_positive_service=?, is_positive_ambience=?, is_positive_price=?, is_negative_food=?, is_negative_service=?, is_negative_ambience=?, is_negative_price=?;");
+				+ " values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) on duplicate key update"
+				+ " business_id=?, user_id=?, is_positive_food=?, is_positive_service=?, is_positive_ambience=?, is_positive_price=?, is_negative_food=?, is_negative_service=?, is_negative_ambience=?, is_negative_price=?, is_reviewed_manually;");
 		pstmt.setString(1, sentiment.getBusinessId());
 		pstmt.setString(2, sentiment.getUserId());
 		pstmt.setString(3, sentiment.getText());
@@ -132,15 +132,17 @@ public class DBHelper {
 		pstmt.setBoolean(9, sentiment.isNegativeService());
 		pstmt.setBoolean(10, sentiment.isNegativeAmbience());
 		pstmt.setBoolean(11, sentiment.isNegativePrice());
-		pstmt.setString(12, sentiment.getText());
-		pstmt.setBoolean(13, sentiment.isPositiveFood());
-		pstmt.setBoolean(14, sentiment.isPositiveService());
-		pstmt.setBoolean(15, sentiment.isPositiveAmbience());
-		pstmt.setBoolean(16, sentiment.isPositivePrice());
-		pstmt.setBoolean(17, sentiment.isNegativeFood());
-		pstmt.setBoolean(18, sentiment.isNegativeService());
-		pstmt.setBoolean(19, sentiment.isNegativeAmbience());
-		pstmt.setBoolean(20, sentiment.isNegativePrice());
+		pstmt.setBoolean(12, sentiment.isReviewedManually());
+		pstmt.setString(13, sentiment.getText());
+		pstmt.setBoolean(14, sentiment.isPositiveFood());
+		pstmt.setBoolean(15, sentiment.isPositiveService());
+		pstmt.setBoolean(16, sentiment.isPositiveAmbience());
+		pstmt.setBoolean(17, sentiment.isPositivePrice());
+		pstmt.setBoolean(18, sentiment.isNegativeFood());
+		pstmt.setBoolean(19, sentiment.isNegativeService());
+		pstmt.setBoolean(20, sentiment.isNegativeAmbience());
+		pstmt.setBoolean(21, sentiment.isNegativePrice());
+		pstmt.setBoolean(22, sentiment.isReviewedManually());
 		
 		res = pstmt.executeUpdate();
 		pstmt.close();
@@ -321,6 +323,7 @@ public class DBHelper {
 		sentiment.setNegativeService(rs.getBoolean(9));
 		sentiment.setNegativeAmbience(rs.getBoolean(10));
 		sentiment.setNegativePrice(rs.getBoolean(11));
+		sentiment.setReviewedManually(rs.getBoolean(12));
 		
 		pstmt.close();
 		return sentiment;

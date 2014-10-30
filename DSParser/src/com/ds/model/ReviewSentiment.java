@@ -13,6 +13,7 @@ public class ReviewSentiment {
 	public static final String IS_NEGATIVE_SERVICE = "is_negative_service";
 	public static final String IS_NEGATIVE_AMBIENCE = "is_negative_ambience";
 	public static final String IS_NEGATIVE_PRICE = "is_negative_price";
+	public static final String IS_REVIEWED_MANUALLY = "is_reviewed_manually";
 	
 	private String businessId;
 	private String userId;
@@ -25,6 +26,8 @@ public class ReviewSentiment {
 	private boolean isNegativeService;
 	private boolean isNegativeAmbience;
 	private boolean isNegativePrice;
+	private boolean reviewedManually = false;
+	
 	public String getBusinessId() {
 		return businessId;
 	}
@@ -91,5 +94,12 @@ public class ReviewSentiment {
 	public void setNegativePrice(boolean isNegativePrice) {
 		this.isNegativePrice = isNegativePrice;
 	}
+	public boolean isReviewedManually() {
+		return reviewedManually;
+	}
+	public void setReviewedManually(boolean reviewedManually) {
+		this.reviewedManually = reviewedManually;
+	}
+	
 	
 }

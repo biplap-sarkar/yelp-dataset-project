@@ -185,7 +185,7 @@ public class DSObjectReader {
 				review.setText(jsonReader.nextString());
 			}
 			else if (key.equalsIgnoreCase(Review.DATE)) {
-				review.setText(jsonReader.nextString());
+				review.setDate(jsonReader.nextString());
 			}
 			else if (key.equalsIgnoreCase(Review.VOTES)) {
 				review.setVotes(readVotesObject());
@@ -280,6 +280,7 @@ public class DSObjectReader {
 		return sentiment;
 	}
 	
+	/*
 	public static void main(String []args) {
 		try {
 			DSObjectReader dsObjectReader = new DSObjectReader("/home/biplap/Downloads/yelp/yelp_academic_dataset_review.json");
@@ -309,7 +310,7 @@ public class DSObjectReader {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
+	}*/
 	/*
 	public static void main(String []args) {
 		try {

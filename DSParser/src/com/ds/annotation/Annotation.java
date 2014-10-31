@@ -19,6 +19,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonReader;
 
 public class Annotation {
 	
@@ -52,7 +53,7 @@ public class Annotation {
 		}
 		System.out.println(list.toString());
 		try {
-			new Annotation().annotateReviews("/home/satya/GitRepo/PdP_Project/test_review.txt");
+			new Annotation().annotateReviews("/home/satya/GitRepo/PdP_Project/yelp/yelp_academic_dataset_food_review.json");
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
@@ -83,24 +84,24 @@ public class Annotation {
 			String lines[] = review.getText().split("\\.");
 			int i = 0;
 			ArrayList<String> list = new ArrayList<>();
-			
+			ArrayList<Double> arrObj = new ArrayList<Double>();
 			while(i < lines.length)
 			{
-				StringBuffer sb = new StringBuffer("\"");
+				/*StringBuffer sb = new StringBuffer("\"");
 				sb.append(lines[i++]);
 				sb.append("\"");
-				list.add(sb.toString());
+				list.add(sb.toString());*/
+				arrObj.add(post("http://api.indico.io/sentiment",lines[i++]));
 			}
-			ArrayList<Dataset> arrObj = post("http://sentiment.vivekn.com/api/batch/",list.toString());
 			i = 0;
 			Classifier classifierObj = new Classifier();
 			while(i < lines.length)
 			{
-				findClass(classifierObj,lines[i],arrObj.get(i));
+				findClass(classifierObj,lines[i],arrObj.get(i),review.getStars());
 				i++;
 			}
 			
-			//updateDB(dbHelper,review,classifierObj);
+			updateDB(dbHelper,review,classifierObj);
 		}
 	}
 	
@@ -121,50 +122,70 @@ public class Annotation {
 		dbHelper.save(rs);
 	}
 	
-	private void findClass(Classifier classifierObj, String line, Dataset datasetObj)
+	private void findClass(Classifier classifierObj, String line, Double sentiment, double rating)
 	{
 		int index = 0;
 		for(String []itr:match)
 		{
 			if(!category.get(index))
-				if(findMatch(itr,classifierObj,line,datasetObj, index) == true)
+				if(findMatch(itr,classifierObj,line,sentiment, index, rating) == true)
 					category.put(index, true);
 			index++;
 		}
 	}
 	
-	private boolean findMatch(String []match,Classifier classifierObj, String line, Dataset datasetObj, int index)
+	private boolean findMatch(String []match,Classifier classifierObj, String line, 
+			Double sentiment, int index, double raiting)
 	{
+		Double positive = 0.6;
+		Double negative = 0.4;
+		Double neutral = 0.5;
 		for (String s : match)
 		{
 		  if (line.contains(s))
 		  {
 			  switch (index) {
 			  case FOOD:
-				  if(datasetObj.result.equalsIgnoreCase("positive"))
+				  if(positive.compareTo(sentiment) < 0)
 					  classifierObj.SetPositiveFood(true);
-				  else if(datasetObj.result.equalsIgnoreCase("negative"))
+				  else if(neutral.compareTo(sentiment) < 0 && raiting > 3)
+					  classifierObj.SetPositiveFood(true);
+				  else if(negative.compareTo(sentiment) < 0 && raiting < 3)
+					  classifierObj.SetNegativeFood(true);
+				  else if(negative.compareTo(sentiment) > 0)
 					  classifierObj.SetNegativeFood(true);
 				  return true;
 				
 			  case SERVICE:
-				  if(datasetObj.result.equalsIgnoreCase("positive"))
+				  if(positive.compareTo(sentiment) < 0)
 					  classifierObj.SetPositiveService(true);
-				  else if(datasetObj.result.equalsIgnoreCase("negative"))
+				  else if(neutral.compareTo(sentiment) < 0 && raiting > 3)
+					  classifierObj.SetPositiveService(true);
+				  else if(negative.compareTo(sentiment) < 0 && raiting < 3)
+					  classifierObj.SetNegativeService(true);
+				  else if(negative.compareTo(sentiment) > 0)
 					  classifierObj.SetNegativeService(true);
 				  return true;
 					
 			  case AMBIENCE:
-				  if(datasetObj.result.equalsIgnoreCase("positive"))
+				  if(positive.compareTo(sentiment) < 0)
 					  classifierObj.SetPositiveAmbience(true);
-				  else if(datasetObj.result.equalsIgnoreCase("negative"))
+				  else if(neutral.compareTo(sentiment) < 0 && raiting > 3)
+					  classifierObj.SetPositiveAmbience(true);
+				  else if(negative.compareTo(sentiment) < 0 && raiting < 3)
+					  classifierObj.SetNegativeAmbience(true);
+				  else if(negative.compareTo(sentiment) > 0)
 					  classifierObj.SetNegativeAmbience(true);
 				  return true;
 					
 			  case PRICE:
-				  if(datasetObj.result.equalsIgnoreCase("positive"))
+				  if(positive.compareTo(sentiment) < 0)
 					  classifierObj.SetPositivePrice(true);
-				  else if(datasetObj.result.equalsIgnoreCase("negative"))
+				  else if(neutral.compareTo(sentiment) < 0 && raiting > 3)
+					  classifierObj.SetPositivePrice(true);
+				  else if(negative.compareTo(sentiment) < 0 && raiting < 3)
+					  classifierObj.SetNegativePrice(true);
+				  else if(negative.compareTo(sentiment) > 0)
 					  classifierObj.SetNegativePrice(true);
 				  return true;
 
@@ -176,7 +197,7 @@ public class Annotation {
 		return false;
 	}	
 	
-	private static ArrayList<Dataset> post(String targetUrl, String urlParameters)
+	private static double post(String targetUrl, String urlParameters)
 	{
 		URL url = null;
 	    HttpURLConnection connection = null;
@@ -187,48 +208,56 @@ public class Annotation {
 	    	connection.setRequestMethod("POST");
 	    	connection.setRequestProperty("Content-Type", "application/json");
 	    	
-	    	connection.setRequestProperty("Content-Length", "" + 
-	               Integer.toString(urlParameters.getBytes().length));
+	    	StringBuilder sb = new StringBuilder("{\"text\":\"");
+			sb.append(urlParameters);
+			sb.append("\"}");
+	    			
+	    	/*connection.setRequestProperty("Content-Length", "" + 
+	               Integer.toString(urlParameters.getBytes().length));*/
+	    	connection.setRequestProperty("content-length", String.valueOf(sb.toString().length()));
 	    	connection.setRequestProperty("Content-Language", "en-US");
 	    	
 	    	//Send request
 	    	connection.setDoOutput(true);
 	    	connection.setDoInput(true);
+	    	System.out.println(sb.toString());
 	        DataOutputStream wr = new DataOutputStream (connection.getOutputStream ());
-	        wr.writeBytes (urlParameters);
+	        wr.writeBytes (sb.toString());
 	        wr.flush ();
 	        wr.close ();
 	        
 	      //Get Response	
 	        InputStream is = connection.getInputStream();
 	        BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-	        String line;
+	        JsonReader jsonReader = new JsonReader(rd);
+			jsonReader.beginObject();
+			jsonReader.nextName();
+			double sentiment = jsonReader.nextDouble();
+			jsonReader.close();
+			
+	        /*String line;
 	        StringBuffer response = new StringBuffer();
 	        JsonParser parser = new JsonParser();
-	        ArrayList<Dataset> arrayObj = new ArrayList<Dataset>();
 	        while((line = rd.readLine()) != null) {
 	        	JsonArray jArray = parser.parse(line).getAsJsonArray();
 	        	System.out.println(line);
 	        	for(JsonElement obj : jArray )
 	        	{
 	        		Gson gson = new Gson();
-	        		arrayObj.add(gson.fromJson(obj, Dataset.class));
+	        		arrayObj = gson.fromJson(obj, Dataset.class);
 	        	}
-	        	response.append(line);
-	        	response.append('\r');
 	        }
-	        rd.close();
-	        return arrayObj;
+	        rd.close();*/
+	        return sentiment;
 	    }
 	    catch(Exception e) {
 	    	e.printStackTrace();
-	    	return null;
+	    	return 0;
 	    }
 	}
 	
 	private class Dataset {
-	    public String confidence;
-	    public String result;
+	    public Double sentiment;
 	}
 	
 	private class Classifier{

@@ -30,7 +30,7 @@ public class Annotation {
 	private static String[] food = new String[] {"food","menu","delicious","breakfast","lunch","dinner","meal","salad","buffet","order",
 			"hot","cold","eat","favorite","drinks","fresh","chicken","pizza","cheese","mexican"};
 	private static String[] service = new String[] {"service","friendly","staff"};
-	private static String[] ambience = new String[] {"ambiance","atmosphere","clean","dirty"};
+	private static String[] ambience = new String[] {"ambience","atmosphere","clean","dirty"};
 	private static String[] price = new String[] {"price","cost","prices","worth","cheap"};
 	ArrayList<String[]> match = new ArrayList<String[]>();
 	HashMap<Integer,Boolean> category = new HashMap<Integer,Boolean>();

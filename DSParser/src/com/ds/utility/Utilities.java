@@ -29,6 +29,29 @@ public class Utilities {
 			e.printStackTrace();
 		}
 	}
+	
+	public static void exportReviewsToCSV(String inputFile, String outputFile) throws IOException {
+		DSObjectReader dsObjectReader = new DSObjectReader(inputFile);
+		BufferedWriter bw = new BufferedWriter(new FileWriter(outputFile));
+		Review review = null;
+		StringBuilder sb = null;
+		while (dsObjectReader.hasNext()) {
+			sb = new StringBuilder("");
+			review = dsObjectReader.readObject(Review.class);
+			sb.append(review.getBusinessId());
+			sb.append(",");
+			sb.append(review.getUserId());
+			sb.append(",");
+			sb.append(review.getStars());
+			sb.append(",");
+			sb.append(review.getText());
+			sb.append("\n");
+			bw.write(sb.toString());
+		}
+		dsObjectReader.close();
+		bw.close();
+	}
+	
 	public static void filterFoodReviews(String inputFile, String outputFile) throws IOException, ClassNotFoundException, SQLException {
 		
 		DSObjectReader dsObjectReader = new DSObjectReader(inputFile);

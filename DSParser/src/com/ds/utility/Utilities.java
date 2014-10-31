@@ -48,6 +48,7 @@ public class Utilities {
 			sb.append("\n");
 			bw.write(sb.toString());
 		}
+		bw.flush();
 		dsObjectReader.close();
 		bw.close();
 	}

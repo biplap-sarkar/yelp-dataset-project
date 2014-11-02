@@ -1,24 +1,24 @@
 package com.ds.annotation;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 import com.ds.db.DBHelper;
 import com.ds.model.DSObjectReader;
 import com.ds.model.Review;
 import com.ds.model.ReviewSentiment;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 
 public class Annotation {
@@ -32,77 +32,110 @@ public class Annotation {
 			"hot","cold","eat","favorite","drinks","fresh","chicken","pizza","cheese","mexican"};
 	private static String[] service = new String[] {"service","friendly","staff"};
 	private static String[] ambience = new String[] {"ambience","atmosphere","clean","dirty"};
-	private static String[] price = new String[] {"price","cost","prices","worth","cheap"};
+	private static String[] price = new String[] {"price","cost","prices","worth","cheap","cash"};
 	ArrayList<String[]> match = new ArrayList<String[]>();
 	HashMap<Integer,Boolean> category = new HashMap<Integer,Boolean>();
 	
-	public static void main (String []args)
-	{
-		String []text = new String[2];
-		text[0] = "food was bad";
-		text[1] = "food was good";
-		int i = 0;
-		ArrayList<String> list = new ArrayList<>();
-		
-		while(i < text.length)
-		{
-			StringBuffer sb = new StringBuffer("\"");
-			sb.append(text[i++]);
-			sb.append("\"");
-			list.add(sb.toString());
-		}
-		System.out.println(list.toString());
-		try {
-			new Annotation().annotateReviews("/home/satya/GitRepo/PdP_Project/yelp/yelp_academic_dataset_food_review.json");
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public void annotateReviews(String inputFile) throws IOException, ClassNotFoundException, SQLException {
+	public void annotateReviews(String inputFile, int startindex, int endindex) throws IOException, ClassNotFoundException, SQLException {
 		match.add(food);
 		match.add(service);
 		match.add(ambience);
 		match.add(price);
+		int count = 0;
 		
 		DSObjectReader dsObjectReader = new DSObjectReader(inputFile);
 		Review review = new Review();
 		DBHelper dbHelper = new DBHelper();
 		dbHelper.connect();
 		
-		while (dsObjectReader.hasNext()) {
+		while (count < startindex && dsObjectReader.hasNext())
+		{
+			dsObjectReader.readObject(Review.class);
+			count++;
+		}
+		while (dsObjectReader.hasNext() && startindex < endindex) {
+			startindex++;
 			category.put(FOOD, false);
 			category.put(SERVICE, false);
 			category.put(AMBIENCE, false);
 			category.put(PRICE, false);
 			
 			review = dsObjectReader.readObject(Review.class);
-			String lines[] = review.getText().split("\\.");
+			HashMap<String,Double> sentimentmap = new HashMap<String,Double>();
 			int i = 0;
-			ArrayList<String> list = new ArrayList<>();
-			ArrayList<Double> arrObj = new ArrayList<Double>();
-			while(i < lines.length)
+			ArrayList<String> classifierText = removeUnwantedText(review.getText().split("\\."));
+
+			//ArrayList<Double> arrObj = new ArrayList<Double>();
+			while(i < classifierText.size())
 			{
-				/*StringBuffer sb = new StringBuffer("\"");
-				sb.append(lines[i++]);
-				sb.append("\"");
-				list.add(sb.toString());*/
-				arrObj.add(post("http://api.indico.io/sentiment",lines[i++]));
-			}
-			i = 0;
-			Classifier classifierObj = new Classifier();
-			while(i < lines.length)
-			{
-				findClass(classifierObj,lines[i],arrObj.get(i),review.getStars());
+				String text = classifierText.get(i).replaceAll("\\\\", "");
+				text = text.replaceAll("\"", "\\\\\"");
+				text = text.replaceAll("\n", "").trim();
+				//System.out.println(text);
+				StringBuilder sb = new StringBuilder("{\"text\":\"");
+				if(text.length() > 1)
+				{
+					sb.append(text.trim());
+					sb.append("\"}");
+				}
+				else
+				{
+					i++;
+					continue;
+				}
+				try {
+					Double value = (post("http://api.indico.io/sentiment",sb.toString()));
+					sentimentmap.put(text, value);
+					//arrObj.add(value);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					System.out.println(sb.toString());
+					System.out.println("current thread id "+Thread.currentThread().getId());
+					e.printStackTrace();
+					//return;
+				}
 				i++;
+			}
+
+			Classifier classifierObj = new Classifier();
+			for (Entry<String, Double> entry : sentimentmap.entrySet())
+			{
+				findClass(classifierObj,entry.getKey(),entry.getValue(),review.getStars());
 			}
 			
 			updateDB(dbHelper,review,classifierObj);
 		}
+	}
+	
+	private ArrayList<String> removeUnwantedText(String []lines)
+	{
+		ArrayList<String> classifierText = new ArrayList<String>();
+		int i = 0;
+		while(i < lines.length)
+		{
+			for(String []itr:match)
+			{
+				if(isMatch(itr,lines[i]) == true)
+				{
+					classifierText.add(lines[i]);
+					break;
+				}
+			}
+			i++;
+		}
+		return classifierText;
+	}
+	
+	private boolean isMatch(String []itr, String line)
+	{
+		for (String s : itr)
+		{
+		  if (line.contains(s))
+		  {
+			  return true;
+		  }
+		}
+		return false;
 	}
 	
 	private void updateDB(DBHelper dbHelper, Review review, Classifier classifierObj) throws ClassNotFoundException, IOException, SQLException
@@ -197,20 +230,15 @@ public class Annotation {
 		return false;
 	}	
 	
-	private static double post(String targetUrl, String urlParameters)
+	public static double post(String targetUrl, String sb) throws Exception
 	{
 		URL url = null;
 	    HttpURLConnection connection = null;
-	    try
 	    {
 	    	url = new URL(targetUrl);
 	    	connection = (HttpURLConnection)url.openConnection();
 	    	connection.setRequestMethod("POST");
 	    	connection.setRequestProperty("Content-Type", "application/json");
-	    	
-	    	StringBuilder sb = new StringBuilder("{\"text\":\"");
-			sb.append(urlParameters);
-			sb.append("\"}");
 	    			
 	    	/*connection.setRequestProperty("Content-Length", "" + 
 	               Integer.toString(urlParameters.getBytes().length));*/
@@ -220,11 +248,15 @@ public class Annotation {
 	    	//Send request
 	    	connection.setDoOutput(true);
 	    	connection.setDoInput(true);
-	    	System.out.println(sb.toString());
-	        DataOutputStream wr = new DataOutputStream (connection.getOutputStream ());
-	        wr.writeBytes (sb.toString());
+	    	
+	        /*DataOutputStream wr = new DataOutputStream (connection.getOutputStream ());
+	        wr.writeBytes (sb);
 	        wr.flush ();
-	        wr.close ();
+	        wr.close ();*/
+	    	BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()));
+	    	bw.write(sb);
+	    	bw.flush();
+	    	
 	        
 	      //Get Response	
 	        InputStream is = connection.getInputStream();
@@ -234,6 +266,7 @@ public class Annotation {
 			jsonReader.nextName();
 			double sentiment = jsonReader.nextDouble();
 			jsonReader.close();
+			bw.close();
 			
 	        /*String line;
 	        StringBuffer response = new StringBuffer();
@@ -250,14 +283,6 @@ public class Annotation {
 	        rd.close();*/
 	        return sentiment;
 	    }
-	    catch(Exception e) {
-	    	e.printStackTrace();
-	    	return 0;
-	    }
-	}
-	
-	private class Dataset {
-	    public Double sentiment;
 	}
 	
 	private class Classifier{

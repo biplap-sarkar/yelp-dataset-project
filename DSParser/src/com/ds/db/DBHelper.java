@@ -77,7 +77,7 @@ public class DBHelper {
 		throw new NotImplementedException();
 	}
 	
-	public <T> T get(Class<T> type, String[] fields, String[]vals) throws SQLException {
+	public <T> T get(Class<T> type, String[] fields, String[]vals) throws SQLException, ClassNotFoundException, IOException {
 		if (type.equals(Business.class)) {
 			return type.cast(getBusiness(fields, vals));
 		}
@@ -250,7 +250,7 @@ public class DBHelper {
 		return result;
 	}
 	
-	private Business getBusiness(String[] fields, String[] vals) throws SQLException {
+	private Business getBusiness(String[] fields, String[] vals) throws SQLException, ClassNotFoundException, IOException {
 		Business business = new Business();
 		PreparedStatement pstmt = buildStatement("select * from business", fields, vals);
 		ResultSet rs = pstmt.executeQuery();
@@ -284,7 +284,7 @@ public class DBHelper {
 		ResultSet rs = pstmt.executeQuery();
 		
 		if (rs.first() == false) {
-			throw new SQLException("No record found for the key "+id);
+			return null;
 		}
 		business.setId(rs.getString(1));
 		business.setName(rs.getString(2));
@@ -305,12 +305,12 @@ public class DBHelper {
 		return business;
 	}
 	
-	private ReviewSentiment getReviewSentiment(String[] fields, String[] vals) throws SQLException {
+	private ReviewSentiment getReviewSentiment(String[] fields, String[] vals) throws SQLException, ClassNotFoundException, IOException {
 		ReviewSentiment sentiment = new ReviewSentiment();
 		PreparedStatement pstmt = buildStatement("select * from review_sentiment", fields, vals);
 		ResultSet rs = pstmt.executeQuery();
 		if (rs.first()==false) {
-			throw new SQLException("No records found for given fields");
+			return null;
 		}
 		sentiment.setBusinessId(rs.getString(1));
 		sentiment.setUserId(rs.getString(2));
@@ -329,23 +329,26 @@ public class DBHelper {
 		return sentiment;
 	}
 	
-	private PreparedStatement buildStatement(String query, String[] fields, String[] vals) throws SQLException {
+	private PreparedStatement buildStatement(String query, String[] fields, String[] vals) throws SQLException, ClassNotFoundException, IOException {
 		if (fields == null || fields.length == 0)
 			throw new IllegalArgumentException("Expected atleast one field, found none");
 		if (fields.length != vals.length)
 			throw new IllegalArgumentException("Mismatch between number of fields and number of values");
 		PreparedStatement pstmt = null;
 		StringBuilder queryBuilder = new StringBuilder(query);
-		queryBuilder.append(" where");
+		queryBuilder.append(" where ");
 		for (int i=0;i<fields.length;i++) {
 			queryBuilder.append(fields[i]+" = "+"?");
 			if (i < fields.length-1) {
 				queryBuilder.append(" and ");
 			}
 		}
+		if (conn == null) {
+			connect();
+		}
 		pstmt = conn.prepareStatement(queryBuilder.toString());
-		for (int i=0;i<vals.length;i++) {
-			pstmt.setString(i, vals[i]);
+		for (int i=1;i<=vals.length;i++) {
+			pstmt.setString(i, vals[i-1]);
 		}
 		return pstmt;
 	}

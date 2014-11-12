@@ -138,6 +138,8 @@ public class Annotation {
 		return false;
 	}
 	
+
+	
 	private void updateDB(DBHelper dbHelper, Review review, Classifier classifierObj) throws ClassNotFoundException, IOException, SQLException
 	{
 		ReviewSentiment rs = new ReviewSentiment();
@@ -356,4 +358,31 @@ public class Annotation {
 		public boolean isPriceNegative(){return isPriceNegative;}
 		
 	}
+	
+	/**
+	 * Sample test for checking if a review sentiment exists in db or not
+	 * @param args
+	 */
+	public static void main(String []args) {
+		
+		DBHelper dbHelper = new DBHelper();
+		ReviewSentiment sentiment = new ReviewSentiment();
+		try {
+			sentiment = dbHelper.get(ReviewSentiment.class, new String[]{"user_id","business_id"}, new String[]{"abc","def"});
+			if (sentiment == null) {
+				System.out.println("no records found");
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
 }

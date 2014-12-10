@@ -17,17 +17,23 @@ public class Utilities {
 
 	public static void main (String []args) {
 		try {
-			filterFoodReviews("/home/biplap/Downloads/yelp/yelp_academic_dataset_review.json", "/home/biplap/Downloads/yelp/yelp_academic_dataset_food_review.json");
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			int count = countTotalReviews("/home/biplap/Downloads/yelp/yelp_academic_dataset_review.json");
+			System.out.println("Total "+count+" reviews read");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} 
+	}
+	
+	public static int countTotalReviews(String inputFile) throws IOException {
+		int count = 0;
+
+		DSObjectReader dsObjectReader = new DSObjectReader(inputFile);
+		while (dsObjectReader.hasNext()) {
+			dsObjectReader.readObject(Review.class);
+			count++;
 		}
+		return count;
 	}
 	
 	public static void exportReviewsToCSV(String inputFile, String outputFile) throws IOException {

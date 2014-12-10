@@ -21,6 +21,7 @@ import com.ds.model.ReviewSentiment;
 public class DBHelper {
 	private static final String CONFIG_FILE = "db.config";
 	private Connection conn = null;
+	private ResultSet rs = null;
 	
 	/*
 	private static final int BUSINESS_ID = 1;
@@ -86,6 +87,34 @@ public class DBHelper {
 		}
 		throw new NotImplementedException();
 	}
+	
+	public <T> ArrayList<T> getAll(Class<T> type, int limit) throws IOException, ClassNotFoundException, SQLException {
+		if (type.equals(ReviewSentiment.class)) {
+			return (ArrayList<T>) getAllReviewSentiment(limit);
+		}
+		throw new NotImplementedException();
+	}
+	
+	public <T> T get(Class<T> type) throws IOException, ClassNotFoundException, SQLException {
+		if (type.equals(ReviewSentiment.class)) {
+			return type.cast(getReviewSentiment());
+		}
+		throw new NotImplementedException();
+	}
+	
+	public <T> boolean next(Class<T> type) throws SQLException {
+		if (type.equals(ReviewSentiment.class)) {
+			return nextReviewSentiment();
+		}
+		throw new NotImplementedException();
+	}
+	/*
+	public <T> ArrayList<T> getAll(Class<T> type) throws IOException, ClassNotFoundException, SQLException {
+		if (type.equals(ReviewSentiment.class)) {
+			return (ArrayList<T>) getAllReviewSentiment();
+		}
+		throw new NotImplementedException();
+	}*/
 	
 	
 	public <T> boolean getBoolean(Class<T> type, String id, String colName) throws SQLException {
@@ -250,6 +279,97 @@ public class DBHelper {
 		return result;
 	}
 	
+	private ArrayList<ReviewSentiment> getAllReviewSentiment(int limit) throws IOException, ClassNotFoundException, SQLException {
+		ArrayList<ReviewSentiment> sentimentList = new ArrayList<ReviewSentiment>();
+		if (conn == null) {
+			connect();
+		}
+		PreparedStatement pstmt = conn.prepareStatement("select * from review_sentiment limit ?");
+		pstmt.setInt(1, limit);
+		ResultSet rs = pstmt.executeQuery();
+		while (rs.next()) {
+			ReviewSentiment sentiment = new ReviewSentiment();
+			sentiment.setBusinessId(rs.getString(1));
+			sentiment.setUserId(rs.getString(2));
+			sentiment.setText(rs.getString(3));
+			sentiment.setPositiveFood(rs.getBoolean(4));
+			sentiment.setPositiveService(rs.getBoolean(5));
+			sentiment.setPositiveAmbience(rs.getBoolean(6));
+			sentiment.setPositivePrice(rs.getBoolean(7));
+			sentiment.setNegativeFood(rs.getBoolean(8));
+			sentiment.setNegativeService(rs.getBoolean(9));
+			sentiment.setNegativeAmbience(rs.getBoolean(10));
+			sentiment.setNegativePrice(rs.getBoolean(11));
+			sentiment.setReviewedManually(rs.getBoolean(12));
+			sentimentList.add(sentiment);
+		}
+		return sentimentList;
+	}
+	
+	private ReviewSentiment getReviewSentiment() throws IOException, ClassNotFoundException, SQLException {
+		ReviewSentiment sentiment = new ReviewSentiment();
+		if (rs == null) {
+			if (conn == null) {
+				connect();
+			}
+			PreparedStatement pstmt = conn.prepareStatement("select * from review_sentiment");
+			rs = pstmt.executeQuery();
+			rs.first();
+		}
+		sentiment.setBusinessId(rs.getString(1));
+		sentiment.setUserId(rs.getString(2));
+		sentiment.setText(rs.getString(3));
+		sentiment.setPositiveFood(rs.getBoolean(4));
+		sentiment.setPositiveService(rs.getBoolean(5));
+		sentiment.setPositiveAmbience(rs.getBoolean(6));
+		sentiment.setPositivePrice(rs.getBoolean(7));
+		sentiment.setNegativeFood(rs.getBoolean(8));
+		sentiment.setNegativeService(rs.getBoolean(9));
+		sentiment.setNegativeAmbience(rs.getBoolean(10));
+		sentiment.setNegativePrice(rs.getBoolean(11));
+		sentiment.setReviewedManually(rs.getBoolean(12));
+		return sentiment;
+	}
+	
+	private boolean nextReviewSentiment() throws SQLException {
+		boolean res = false;
+		if (rs != null) {
+			res = rs.next();
+			if (res == false) {
+				rs = null;
+			}
+		}
+		return res;
+	}
+	
+	
+	
+	private ArrayList<ReviewSentiment> getAllReviewSentiment() throws IOException, ClassNotFoundException, SQLException {
+		ArrayList<ReviewSentiment> sentimentList = new ArrayList<ReviewSentiment>();
+		if (conn == null) {
+			connect();
+		}
+		PreparedStatement pstmt = conn.prepareStatement("select * from review_sentiment");
+		ResultSet rs = pstmt.executeQuery();
+		while (rs.next()) {
+			ReviewSentiment sentiment = new ReviewSentiment();
+			sentiment.setBusinessId(rs.getString(1));
+			sentiment.setUserId(rs.getString(2));
+			sentiment.setText(rs.getString(3));
+			sentiment.setPositiveFood(rs.getBoolean(4));
+			sentiment.setPositiveService(rs.getBoolean(5));
+			sentiment.setPositiveAmbience(rs.getBoolean(6));
+			sentiment.setPositivePrice(rs.getBoolean(7));
+			sentiment.setNegativeFood(rs.getBoolean(8));
+			sentiment.setNegativeService(rs.getBoolean(9));
+			sentiment.setNegativeAmbience(rs.getBoolean(10));
+			sentiment.setNegativePrice(rs.getBoolean(11));
+			sentiment.setReviewedManually(rs.getBoolean(12));
+			sentimentList.add(sentiment);
+		}
+		return sentimentList;
+	}
+	
 	private Business getBusiness(String[] fields, String[] vals) throws SQLException, ClassNotFoundException, IOException {
 		Business business = new Business();
 		PreparedStatement pstmt = buildStatement("select * from business", fields, vals);
@@ -352,7 +472,26 @@ public class DBHelper {
 		}
 		return pstmt;
 	}
-	
+	/*
+	public static void main (String []args) {
+		DBHelper dbHelper = new DBHelper();
+		try {
+			ArrayList<ReviewSentiment> sentimentList = dbHelper.getAll(ReviewSentiment.class, 20);
+			for (int i=0;i<sentimentList.size();i++) {
+				System.out.println(sentimentList.get(i).getText());
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}*/
 	/*
 	public static void main(String[]args){
 		ArrayList<String> str = new ArrayList<String>();
